@@ -1,0 +1,7 @@
+/build/*.xlsx
+/build/*.exe
+/build/*.jar
+/build/*.zip
+# Project exclude paths
+/target/
+/.idea/
