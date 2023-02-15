@@ -39,8 +39,8 @@ class Lecture(
                 printlnWarn("변환 실패(${cause}): $raw")
             }
             val data = raw.split(' ')
-            if(data.size <= 16){
-                error("길이 부족")
+            if(data.size < 15){
+                error("길이 부족(${data.size})")
                 return null
             }
             val index = data[0].toIntOrNull()
@@ -66,38 +66,35 @@ class Lecture(
             }
             val professorName = data[5]
             val isEssential = data[6] == "교필"
-            // skip data[7]
-            val grades = data[8].toIntOrNull()
+            val grades = data[7].toIntOrNull()
             if(grades == null){
                 error("학점 유효하지 않음")
                 return null
             }
-            val times = data[9].toIntOrNull()
+            val times = data[8].toIntOrNull()
             if(times == null){
                 error("시수 유효하지 않음")
                 return null
             }
-            val isPass = data[10] == "패스제"
-            val type = LectureType.fromText(data[11])
+            val isPass = data[9] == "패스제"
+            val type = LectureType.fromText(data[10])
             if(type == null) {
                 error("수업구분 유효하지 않음")
                 return null
             }
-            val weekDuration = data[12].toIntRange()
+            val weekDuration = data[11].toIntRange()
             if(weekDuration == null || weekDuration.isEmpty()) {
                 error("수업주차 유효하지 않음")
                 return null
             }
-            val isOnline = data[13] == "비대면"
-            val numberOfPeople = data[14].toIntOrNull()
+            val isOnline = data[12] == "비대면"
+            val numberOfPeople = data[13].toIntOrNull()
             if(numberOfPeople == null){
                 error("인원 유효하지 않음")
                 return null
             }
-            val additionalData = data.subList(15, data.size).joinToString(" ")
-            val place = additionalData.substringBefore(" 6주차부터").substringBefore(" 신규 교과목")
-            val note = LectureNote.fromText(additionalData)
-            return Lecture(dayOfWeek, duration, name, partType, professorName, isEssential, grades, times, isPass, type, weekDuration, isOnline, numberOfPeople, place, note)
+            val place = data[14]
+            return Lecture(dayOfWeek, duration, name, partType, professorName, isEssential, grades, times, isPass, type, weekDuration, isOnline, numberOfPeople, place, null)
         }
     }
 }

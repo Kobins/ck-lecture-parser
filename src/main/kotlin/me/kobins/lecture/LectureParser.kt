@@ -1,5 +1,10 @@
 package me.kobins.lecture
 
+import org.apache.commons.cli.DefaultParser
+import org.apache.commons.cli.HelpFormatter
+import org.apache.commons.cli.Option
+import org.apache.commons.cli.Options
+import org.apache.commons.cli.ParseException
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.ss.util.CellRangeAddress
 import org.apache.poi.xssf.usermodel.XSSFColor
@@ -66,15 +71,45 @@ object LectureParser {
         }
     }
 
+    val optionList = listOf(
+        Option.builder("file")
+            .hasArg()
+            .argName("file")
+            .desc("파일 경로를 정합니다. 기본 lecture.txt입니다.")
+            .build(),
+        Option.builder("maxduration")
+            .hasArg()
+            .argName("maxduration")
+            .desc("최대 교시 수를 정합니다(10교시, 12교시, 13교시 ...). 기본 12교시입니다.")
+            .build(),
+    )
     @JvmStatic
     fun main(args: Array<String>) {
         println("=========================")
         println("교양 시간표 변환기")
-        println("2022-2 기준 작동")
+        println("2023-1 기준 작동")
         println("만든이: https://github.com/Kobins")
         println("=========================")
         println()
-        val path = args.joinToString(" ")
+
+        val options = Options().apply {
+            optionList.forEach { addOption(it) }
+        }
+        val parser = DefaultParser()
+        val line = try {
+            parser.parse(options, args)
+        }catch (e: ParseException) {
+            println("오류 발생: ${e.message}")
+
+            HelpFormatter().printHelp("lecture-parser", options)
+            return
+        }
+
+        val path = line.getOptionValue("file")
+        val maxDuration = line.getOptionValue("maxduration")?.toIntOrNull()?.takeIf { it in 10 .. 13 }
+            ?: error("최대 교시 수가 유효하지 않습니다.")
+        println("최대 교시 수: ${maxDuration}교시")
+
         val file = getFile(path)
         val blacklist = getFilters("blacklist.txt")
         println("다음 ${blacklist.size}개의 블랙리스트(blacklist.txt)를 적용함:")
@@ -175,7 +210,7 @@ object LectureParser {
                 val placeRow        = rows[rowIndex * 3 + 2]
                 for(lecture in lecturesInRow) {
                     // 맨 앞 2열 넘기고, 요일 오프셋 적용(월화수목금)
-                    val dayOfWeekOffset = 2 + lecture.dayOfWeek.ordinal * 12
+                    val dayOfWeekOffset = 2 + lecture.dayOfWeek.ordinal * maxDuration
                     // 2022-2 변경: duration이 IntRange -> List<IntRange>, 물성의미학 6학점(1-3,5-7) 5주블록식 ㄷㄷ
                     for(duration in lecture.duration) {
                         val firstColumn = dayOfWeekOffset + duration.first - 1

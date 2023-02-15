@@ -4,6 +4,7 @@ enum class LectureType(val text: String) {
     NORMAL      ("일반"),
     BLOCK_10WEEK("블록식(10주)"),
     BLOCK_5WEEK ("블록식(5주)"),
+    TEAM_TEACHING ("팀티칭"),
     ;
     companion object {
         private val byName by lazy {
